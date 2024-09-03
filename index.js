@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const ClientRouter = require("./routes/clientRoute.js");
+const ClientRouter = require("./routes/ClientRoute.js");
 const auth = require("./middleware/authMiddleware.js");
 
 // Middleware to parse JSON request bodies
