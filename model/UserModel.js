@@ -1,10 +1,14 @@
-const mongoose=require("mongoose");
+const mongoose = require("mongoose");
 
-const promptSchema=new mongoose.Schema({
-    prompt:{type:String,required: [true, 'Prompt is required'],}
-})
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+}, {
+  versionKey: false,
+  timestamps: true,
+});
 
-const PromptModel=mongoose.model("Prompt",promptSchema);
+const UserModel = mongoose.model("User", userSchema);
 
-module.exports=PromptModel;
-
+module.exports = UserModel;

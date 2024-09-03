@@ -2,12 +2,15 @@ const express = require("express");
 const dotenv = require("dotenv").config();
 const cors = require("cors");
 const connection = require("./config/db.js");
-const PromptModel = require("./model/UserModel.js");
+const PromptModel = require("./model/PromptModel.js"); // Corrected import
+const UserModel = require("./model/UserModel.js"); // Ensure this is imported
 
 const PORT = process.env.PORT || 5000;
 
 const app = express();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const ClientRouter = require("./routes/clientRoute.js");
+const auth = require("./middleware/authMiddleware.js");
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
@@ -17,6 +20,8 @@ app.use(
     origin: "*",
   })
 );
+
+app.use("/api", ClientRouter);
 
 // Access your API key as an environment variable
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
@@ -43,10 +48,13 @@ async function run(req, res) {
 
 app.post("/generate", run);
 
-app.post("/prompt", async (req, res) => {
+app.post("/prompt", auth, async (req, res) => {
   const { prompt } = req.body;
   try {
-    const newPrompt = new PromptModel({ prompt });
+    const newPrompt = new PromptModel({ 
+      prompt,
+      createdBy: req.user._id // Pass the user ID here
+    });
     await newPrompt.save();
     res
       .status(200)
@@ -57,9 +65,9 @@ app.post("/prompt", async (req, res) => {
   }
 });
 
-app.get("/recent", async (req, res) => {
+app.get("/recent", auth, async (req, res) => {
   try {
-    const prompts = await PromptModel.find();
+    const prompts = await PromptModel.find({ createdBy: req.user._id });
     if (!prompts) {
       return res.status(404).json({ Message: "Prompt not found" });
     }
